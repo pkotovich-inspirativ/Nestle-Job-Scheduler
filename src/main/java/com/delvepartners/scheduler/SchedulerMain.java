@@ -13,20 +13,32 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.delvepartners.scheduler.Util.DEFAULT_ENCODING;
+import static com.delvepartners.scheduler.Util.JOB_QUEUE_NAME;
+import static com.delvepartners.scheduler.Util.MQ_URL_ENVVAR;
+import static com.delvepartners.scheduler.Util.getEnvOrThrow;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatSecondlyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class SchedulerMain {
 
-    final static Logger logger = LoggerFactory.getLogger(SchedulerMain.class);
+    final static Logger LOG = LoggerFactory.getLogger(SchedulerMain.class);
     final static ConnectionFactory factory = new ConnectionFactory();
     
     public static void main(String[] args) throws Exception {
-        factory.setUri(System.getenv("CLOUDAMQP_URL"));
-        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+        String queueUri = getEnvOrThrow(MQ_URL_ENVVAR);
+        factory.setUri(queueUri);
+        if(LOG.isInfoEnabled()) {
+            LOG.info("queue connection factory configured for URI: "+queueUri);
+        }
 
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
+
+        if(LOG.isInfoEnabled()) {
+            LOG.info("created and started default scheduler");
+        }
 
         JobDetail jobDetail = newJob(HelloJob.class).build();
         
@@ -34,6 +46,10 @@ public class SchedulerMain {
                 .startNow()
                 .withSchedule(repeatSecondlyForever(5))
                 .build();
+
+        if(LOG.isInfoEnabled()) {
+            LOG.info("trigger scheduled to run job every 5 seconds: "+trigger.getDescription());
+        }
 
         scheduler.scheduleJob(jobDetail, trigger);
     }
@@ -46,19 +62,23 @@ public class SchedulerMain {
             try {
                 Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel();
-                String queueName = "work-queue-1";
+
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put("x-ha-policy", "all");
-                channel.queueDeclare(queueName, true, false, false, params);
+                channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, params);
 
-                String msg = "Sent at:" + System.currentTimeMillis();
-                byte[] body = msg.getBytes("UTF-8");
-                channel.basicPublish("", queueName, MessageProperties.PERSISTENT_TEXT_PLAIN, body);
-                logger.info("Message Sent: " + msg);
+                String mainClass = "test_project.testjob_1_0.TestJob";
+                byte[] body = mainClass.getBytes(DEFAULT_ENCODING);
+                channel.basicPublish("", JOB_QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, body);
+
+                if(LOG.isInfoEnabled()) {
+                    LOG.info("message published to queue: "+ mainClass);
+                }
+
                 connection.close();
             }
             catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
             }
 
         }
