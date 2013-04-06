@@ -1,4 +1,4 @@
-package com.heroku.devcenter;
+package com.delvepartners.scheduler;
 
 
 import com.rabbitmq.client.Channel;

@@ -1,4 +1,4 @@
-package com.heroku.devcenter;
+package com.delvepartners.scheduler;
 
 
 import com.rabbitmq.client.Channel;
@@ -8,7 +8,6 @@ import com.rabbitmq.client.QueueingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
