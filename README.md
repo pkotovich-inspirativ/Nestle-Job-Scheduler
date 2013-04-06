@@ -22,6 +22,18 @@
         -DcreateChecksum=true \
         -DgeneratePom=true
 
+# Install ETL job code
+
+    mvn install:install-file \
+        -DgroupId=com.delvepartners.etl \
+        -DartifactId=test-job \
+        -Dversion=1.0 \
+        -Dpackaging=jar \
+        -Dfile=<path-to-test-job-jar> \
+        -DlocalRepositoryPath=lib \
+        -DcreateChecksum=true \
+        -DgeneratePom=true
+
 # Run on Heroku
 
     heroku create
