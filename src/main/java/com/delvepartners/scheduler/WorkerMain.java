@@ -28,7 +28,6 @@ public class WorkerMain {
         }
         Channel channel = connection.createChannel();
 
-
         channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, QUEUE_CONFIG);
         QueueingConsumer consumer = new QueueingConsumer(channel);
         channel.basicConsume(JOB_QUEUE_NAME, false, consumer);

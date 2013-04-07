@@ -1,28 +1,10 @@
-# Install Talend system routines dependency
+## Prerequisites
 
-    mvn install:install-file \
-        -DgroupId=org.talend \
-        -DartifactId=system-routines \
-        -Dversion=5.2.2 \
-        -Dpackaging=jar \
-        -Dfile=<path-to-system-routines-jar> \
-        -DlocalRepositoryPath=lib \
-        -DcreateChecksum=true \
-        -DgeneratePom=true
+* [Maven 3.0.*](http://maven.apache.org/download.cgi)
+* [Heroku Toolbelt](https://toolbelt.heroku.com/)
+* Git
 
-# Install Delve Partners ETL routines dependency
-
-    mvn install:install-file \
-        -DgroupId=com.delvepartners.db \
-        -DartifactId=etl \
-        -Dversion=1.0 \
-        -Dpackaging=jar \
-        -Dfile=<path-to-etl-jar> \
-        -DlocalRepositoryPath=lib \
-        -DcreateChecksum=true \
-        -DgeneratePom=true
-
-# Install ETL job code
+## Install ETL job code
 
     mvn install:install-file \
         -DgroupId=com.delvepartners.etl \
@@ -34,7 +16,13 @@
         -DcreateChecksum=true \
         -DgeneratePom=true
 
-# Run on Heroku
+## Run in development environment
+
+    \# confirm MQ URL in ${basedir}/.env
+    mvn package
+    foreman start
+
+## Run on Heroku
 
     heroku create
     heroku addons:add cloudamqp
