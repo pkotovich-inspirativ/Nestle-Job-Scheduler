@@ -18,7 +18,7 @@
 
 ## Run in development environment
 
-    \# confirm MQ URL in ${basedir}/.env
+    # confirm MQ URL in ${basedir}/.env
     mvn package
     foreman start
 
