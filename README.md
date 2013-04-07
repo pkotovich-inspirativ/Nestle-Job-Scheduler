@@ -3,6 +3,7 @@
 * [Maven 3.0.*](http://maven.apache.org/download.cgi)
 * [Heroku Toolbelt](https://toolbelt.heroku.com/)
 * Git
+* RabbitMQ: `brew install rabbitmq`
 
 ## Install ETL job code
 
