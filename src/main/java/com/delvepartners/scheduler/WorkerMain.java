@@ -6,14 +6,11 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
+import org.apache.commons.lang.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class WorkerMain {
-
     final static Logger LOG = LoggerFactory.getLogger(WorkerMain.class);
 
     public static void main(String[] args) throws Exception {
@@ -31,9 +28,8 @@ public class WorkerMain {
         }
         Channel channel = connection.createChannel();
 
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("x-ha-policy", "all");
-        channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, params);
+
+        channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, QUEUE_CONFIG);
         QueueingConsumer consumer = new QueueingConsumer(channel);
         channel.basicConsume(JOB_QUEUE_NAME, false, consumer);
         if(LOG.isInfoEnabled()) {
@@ -43,14 +39,21 @@ public class WorkerMain {
         while (true) {
             QueueingConsumer.Delivery delivery = consumer.nextDelivery(); 
             if (delivery != null) {
-                String msg = new String(delivery.getBody(), DEFAULT_ENCODING);
+                TalendJobInfo jobInfo = (TalendJobInfo) SerializationUtils.deserialize(delivery.getBody());
+
                 if(LOG.isInfoEnabled()){
-                    LOG.info("message received: " + msg);
+                    LOG.info("message received: " + jobInfo);
                 }
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
+                TalendJobRunner runner = new TalendJobRunner(jobInfo);
+
+                runner.execute();
+
+                if(LOG.isInfoEnabled()) {
+                    LOG.info("message processed");
+                }
             }
         }
-
     }
-
 }

@@ -5,17 +5,17 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
+import org.apache.commons.lang.SerializationUtils;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
-import static com.delvepartners.scheduler.Util.DEFAULT_ENCODING;
 import static com.delvepartners.scheduler.Util.JOB_QUEUE_NAME;
 import static com.delvepartners.scheduler.Util.MQ_URL_ENVVAR;
+import static com.delvepartners.scheduler.Util.QUEUE_CONFIG;
 import static com.delvepartners.scheduler.Util.getEnvOrThrow;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatSecondlyForever;
@@ -40,7 +40,25 @@ public class SchedulerMain {
             LOG.info("created and started default scheduler");
         }
 
-        JobDetail jobDetail = newJob(HelloJob.class).build();
+        /*
+            CREATE TABLE job_configuration (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR NOT NULL UNIQUE,
+                description VARCHAR,
+                project_name VARCHAR NOT NULL,
+                job_name VARCHAR NOT NULL,
+                version VARCHAR NOT NULL,
+                class_name VARCHAR NOT NULL,
+                schedule VARCHAR NOT NULL
+            );
+         */
+
+        JobDetail jobDetail = newJob(TalendJobExecution.class)
+                .usingJobData("projectName", "TEST_PROJECT")
+                .usingJobData("jobName", "TestJob")
+                .usingJobData("version", "1.0")
+                .usingJobData("arguments", "a,b,c")
+                .build();
         
         Trigger trigger = newTrigger()
                 .startNow()
@@ -48,41 +66,54 @@ public class SchedulerMain {
                 .build();
 
         if(LOG.isInfoEnabled()) {
-            LOG.info("trigger scheduled to run job every 5 seconds: "+trigger.getDescription());
+            LOG.info("trigger scheduled to run job every 5 seconds. next run at: "+trigger.getNextFireTime());
         }
 
         scheduler.scheduleJob(jobDetail, trigger);
     }
 
-    public static class HelloJob implements Job {
-        
+    public static class TalendJobExecution implements Job {
+        private final static Logger LOG = LoggerFactory.getLogger(TalendJobExecution.class);
+
         @Override
         public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-            
+            Connection connection = null;
             try {
-                Connection connection = factory.newConnection();
+                connection = factory.newConnection();
                 Channel channel = connection.createChannel();
 
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("x-ha-policy", "all");
-                channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, params);
+                channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, QUEUE_CONFIG);
 
-                String mainClass = "test_project.testjob_1_0.TestJob";
-                byte[] body = mainClass.getBytes(DEFAULT_ENCODING);
-                channel.basicPublish("", JOB_QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, body);
+                JobDataMap map = jobExecutionContext.getJobDetail().getJobDataMap();
+                Class<?> className = Util.getTalendJobClass(
+                        map.getString("projectName"),
+                        map.getString("jobName"),
+                        map.getString("version")
+                );
+                String[] arguments = Util.asArray(map.getString("arguments"));
+                TalendJobInfo jobInfo = new TalendJobInfo(className, arguments);
+
+                byte[] body = SerializationUtils.serialize(jobInfo);
+                channel.basicPublish("", JOB_QUEUE_NAME, MessageProperties.PERSISTENT_BASIC, body);
 
                 if(LOG.isInfoEnabled()) {
-                    LOG.info("message published to queue: "+ mainClass);
+                    LOG.info("message published to queue: "+ jobInfo);
                 }
 
-                connection.close();
+            } catch (IOException e) {
+                LOG.error("caught IOException when executing job", e);
+            } finally {
+                if(null != connection) {
+                    try {
+                        connection.close();
+                    } catch (IOException e) {
+                        //noinspection ThrowFromFinallyBlock
+                        throw new JobExecutionException(e);
+                    }
+                }
             }
-            catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
-
         }
-        
     }
 
 }
+
