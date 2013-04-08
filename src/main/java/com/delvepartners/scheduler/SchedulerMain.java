@@ -114,7 +114,7 @@ public class SchedulerMain {
                         connection.close();
                     } catch (IOException e) {
                         //noinspection ThrowFromFinallyBlock
-                        throw new JobExecutionException(e);
+                        throw new IllegalStateException("can't close connection",e);
                     }
                 }
             }
