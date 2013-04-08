@@ -90,7 +90,7 @@ public class SchedulerMain {
 
                 channel.queueDeclare(JOB_QUEUE_NAME, true, false, false, QUEUE_CONFIG);
 
-                JobDataMap map = jobExecutionContext.getJobDetail().getJobDataMap();
+                JobDataMap map = jobExecutionContext.getMergedJobDataMap();
                 Class<?> className = Util.getTalendJobClass(
                         map.getString("projectName"),
                         map.getString("jobName"),
