@@ -55,11 +55,27 @@
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
-        <dependency>
-            <groupId>com.delvepartners.etl</groupId>
-            <artifactId>test-job</artifactId>
-            <version>1.0</version>
-        </dependency>
+	<dependency>
+	  <groupId>dom4j</groupId>
+	  <artifactId>dom4j</artifactId>
+	  <version>1.6.1</version>
+	</dependency>
+	<dependency>
+	  <groupId>cimt.talendcomp</groupId>
+	  <artifactId>gaanalytics</artifactId>
+	  <version>1.5.0</version>
+	  <classifier>jar-with-dependencies</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>nestle_googleanalytics_import.googleanalyticsimporter_0_1</groupId>
+	  <artifactId>GoogleAnalyticsImporter</artfifactId>
+	  <version>0.1</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.talend</groupId>
+	  <artifactId>thashfile</artifactId>
+	  <version>5.2.2</version>
+	</dependency>
     </dependencies>
 
     <build>
