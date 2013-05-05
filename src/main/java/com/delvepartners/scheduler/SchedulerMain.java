@@ -24,7 +24,7 @@ import static com.delvepartners.scheduler.Util.MQ_URL_ENVVAR;
 import static com.delvepartners.scheduler.Util.QUEUE_CONFIG;
 import static com.delvepartners.scheduler.Util.getEnvOrThrow;
 import static org.quartz.JobBuilder.newJob;
-import static org.quartz.SimpleScheduleBuilder.repeatSecondlyForever;
+import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class SchedulerMain {
@@ -60,15 +60,15 @@ public class SchedulerMain {
          */
 
         JobDetail jobDetail = newJob(TalendJobExecution.class)
-                .usingJobData("projectName", "TEST_PROJECT")
-                .usingJobData("jobName", "TestJob")
-                .usingJobData("version", "1.0")
-                .usingJobData("arguments", "a,b,c")
+                .usingJobData("projectName", "NESTLE_GOOGLEANALYTICS_IMPORT")
+                .usingJobData("jobName", "GoogleAnalyticsImporter")
+                .usingJobData("version", "0.1")
+                .usingJobData("arguments", "")
                 .build();
         
         Trigger trigger = newTrigger()
                 .startNow()
-                .withSchedule(repeatSecondlyForever(5))
+                .withSchedule(repeatMinutelyForever(10))
                 .build();
 
         if(LOG.isInfoEnabled()) {
