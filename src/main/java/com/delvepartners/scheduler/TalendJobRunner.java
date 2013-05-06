@@ -3,6 +3,10 @@ package com.delvepartners.scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import static org.apache.commons.lang.reflect.ConstructorUtils.invokeExactConstructor;
 import static org.apache.commons.lang.reflect.MethodUtils.invokeMethod;
 
@@ -24,7 +28,18 @@ public class TalendJobRunner {
     @SuppressWarnings("unused")
     public TalendJobRunner(Class<?> jobClass, String ... args) {
         this.jobClass = jobClass;
-        this.arguments = (args != null ? args : new String[]{});
+        if(args == null || args.length < 1) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DATE, -1);
+            Date date = calendar.getTime();
+            String dateStr = (new SimpleDateFormat("yyyy-MM-dd")).format(date);
+
+            args = new String[] {
+                    "--context_param START_DATE="+dateStr,
+                    "--context_param END_DATE="+dateStr
+            };
+        }
+        this.arguments = args;
     }
 
     public void execute() {

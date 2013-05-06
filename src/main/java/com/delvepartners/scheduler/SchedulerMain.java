@@ -59,6 +59,7 @@ public class SchedulerMain {
             );
          */
 
+
         JobDetail jobDetail = newJob(TalendJobExecution.class)
                 .usingJobData("projectName", "NESTLE_GOOGLEANALYTICS_IMPORT")
                 .usingJobData("jobName", "GoogleAnalyticsImporter")
