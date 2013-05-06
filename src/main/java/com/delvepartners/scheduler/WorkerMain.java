@@ -38,14 +38,14 @@ public class WorkerMain {
         while (true) {
             QueueingConsumer.Delivery delivery = consumer.nextDelivery(); 
             if (delivery != null) {
-                TalendJobInfo jobInfo = (TalendJobInfo) SerializationUtils.deserialize(delivery.getBody());
+                Class<?> jobClass = (Class<?>) SerializationUtils.deserialize(delivery.getBody());
 
                 if(LOG.isInfoEnabled()){
-                    LOG.info("message received: " + jobInfo);
+                    LOG.info("message received: " + jobClass.getSimpleName());
                 }
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
-                TalendJobRunner runner = new TalendJobRunner(jobInfo);
+                TalendJobRunner runner = new TalendJobRunner(jobClass);
 
                 runner.execute();
 

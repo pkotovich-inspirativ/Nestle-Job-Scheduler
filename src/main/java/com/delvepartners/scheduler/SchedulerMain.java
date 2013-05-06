@@ -72,7 +72,7 @@ public class SchedulerMain {
                 .build();
 
         if(LOG.isInfoEnabled()) {
-            LOG.info("trigger scheduled to run job every 5 seconds. next run at: "+trigger.getNextFireTime());
+            LOG.info("trigger scheduled to run job every 10 minutes. next run at: "+trigger.getNextFireTime());
         }
 
         scheduler.scheduleJob(jobDetail, trigger);
@@ -96,14 +96,12 @@ public class SchedulerMain {
                         map.getString("jobName"),
                         map.getString("version")
                 );
-                String[] arguments = Util.asArray(map.getString("arguments"));
-                TalendJobInfo jobInfo = new TalendJobInfo(className, arguments);
 
-                byte[] body = SerializationUtils.serialize(jobInfo);
+                byte[] body = SerializationUtils.serialize(className);
                 channel.basicPublish("", JOB_QUEUE_NAME, MessageProperties.PERSISTENT_BASIC, body);
 
                 if(LOG.isInfoEnabled()) {
-                    LOG.info("message published to queue: "+ jobInfo);
+                    LOG.info("message published to queue: " + className.getSimpleName()); //+ jobInfo);
                 }
 
             } catch (IOException e) {

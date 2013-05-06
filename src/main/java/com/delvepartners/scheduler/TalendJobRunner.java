@@ -17,32 +17,36 @@ public class TalendJobRunner {
 
     private static final String EXEC_METHOD="runJobInTOS";
 
-    private final TalendJobInfo jobInfo;
+    private final Class<?> jobClass;
 
-    public TalendJobRunner(TalendJobInfo jobInfo) {
-        this.jobInfo = jobInfo;
+    private final String[] arguments;
+
+    @SuppressWarnings("unused")
+    public TalendJobRunner(Class<?> jobClass, String ... args) {
+        this.jobClass = jobClass;
+        this.arguments = (args != null ? args : new String[]{});
     }
 
     public void execute() {
         if(LOG.isInfoEnabled()) {
-            LOG.info("executing job: "+ jobInfo.getJobClass().getSimpleName());
+            LOG.info("executing job: "+ jobClass.getSimpleName());
         }
 
         try {
             Object instance = invokeExactConstructor(
-                    jobInfo.getJobClass(),
+                    jobClass,
                     new Object[0]
             );
 
             if(LOG.isInfoEnabled()) {
-                LOG.info(String.format("instance of %s created: %s", jobInfo.getJobClass(), instance.toString()));
+                LOG.info(String.format("instance of %s created: %s", jobClass, instance.toString()));
             }
 
             Object result = invokeMethod(
                     instance,
                     EXEC_METHOD,
-                    new Object[] {jobInfo.getArguments()},
-                    new Class[]  {jobInfo.getArguments().getClass()}
+                    new Object[] {arguments},
+                    new Class[]  {arguments.getClass()}
             );
 
             if(LOG.isInfoEnabled()) {
