@@ -68,7 +68,7 @@
 	</dependency>
 	<dependency>
 	  <groupId>nestle_googleanalytics_import.googleanalyticsimporter_0_1</groupId>
-	  <artifactId>GoogleAnalyticsImporter</artfifactId>
+	  <artifactId>GoogleAnalyticsImporter</artifactId>
 	  <version>0.1</version>
 	</dependency>
 	<dependency>
