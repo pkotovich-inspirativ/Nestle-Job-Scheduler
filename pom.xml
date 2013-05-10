@@ -71,6 +71,11 @@
 	  <artifactId>GoogleAnalyticsImporter</artifactId>
 	  <version>0.1</version>
 	</dependency>
+    <dependency>
+        <groupId>nestle_product_order_etl.productorderimport_0_1</groupId>
+        <artifactId>ProductOrderImport</artifactId>
+        <version>0.1</version>
+    </dependency>
 	<dependency>
 	  <groupId>org.talend</groupId>
 	  <artifactId>thashfile</artifactId>
