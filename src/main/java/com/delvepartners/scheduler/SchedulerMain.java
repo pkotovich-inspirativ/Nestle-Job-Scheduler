@@ -6,13 +6,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 import org.apache.commons.lang.SerializationUtils;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.Scheduler;
-import org.quartz.Trigger;
+import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +17,7 @@ import static com.delvepartners.scheduler.Util.JOB_QUEUE_NAME;
 import static com.delvepartners.scheduler.Util.MQ_URL_ENVVAR;
 import static com.delvepartners.scheduler.Util.QUEUE_CONFIG;
 import static com.delvepartners.scheduler.Util.getEnvOrThrow;
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -77,6 +72,21 @@ public class SchedulerMain {
         }
 
         scheduler.scheduleJob(jobDetail, trigger);
+
+        // ProductOrderEtl
+        JobDetail ProductOrderEtlJobDetail = newJob(TalendJobExecution.class)
+                .usingJobData("projectName", "NESTLE_PRODUCT_ORDER_ETL")
+                .usingJobData("jobName", "ProductOrderImport")
+                .usingJobData("version", "0.1")
+                .usingJobData("arguments", "")
+                .build();
+
+        CronTrigger ProductOrderEtlTrigger = newTrigger()
+                .startNow()
+                .withSchedule(dailyAtHourAndMinute(19, 17))
+                .build();
+
+        scheduler.scheduleJob(ProductOrderEtlJobDetail, ProductOrderEtlTrigger);
     }
 
     public static class TalendJobExecution implements Job {
